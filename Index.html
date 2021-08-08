@@ -3,9 +3,16 @@
     <head>
         <title>A-Star Demo</title>
         <link href="./Styles.css" type="stylesheet">
+        <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
     </head>
     <body>
-        <canvas id="main-canvas"></canvas>
+        <div class="row">
+            <div class="col-2"></div>
+            <div class="col-10" id="canvas-container">
+                <canvas width="1500px" height="800px" id="main-canvas"></canvas>
+            </div>
+        </div>
         <script src="./Node.js"></script>
         <script src="./Index.js"></script>
     </body>

@@ -16,9 +16,20 @@ let clicks = 0;
 let graph = [];
 let amtH = 75;
 let amtV = 50;
+
+function fitToContainer(canvas) {
+    // Make it visually fill the positioned parent
+    canvas.style.width ='100%';
+    canvas.style.height='100%';
+    // ...then set the internal size to match
+    canvas.width  = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+}
+
+fitToContainer(canvas);
+
 function init() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    let canvasContainer = document.getElementById("canvas-container");
     pageWidth = canvas.width;
     pageHeight = canvas.height;
     let nodeWidth = pageWidth / amtH;
@@ -32,7 +43,7 @@ function init() {
             if(Math.random() < 0.1) {
                 isNull = true;
             }
-            let node = new Node(x - 10, y, nodeWidth, nodeHeight, isNull);
+            let node = new Node(x, y, nodeWidth, nodeHeight, isNull);
             row.push(node);
             x += nodeWidth;
         }
@@ -90,7 +101,6 @@ function resetColors() {
 
 function revealStraightPath(cur) {
     while(!compareArrays(cur, start)) {
-        console.log(cur);
         graph[cur[0]][cur[1]].color = "white";
         cur = graph[cur[0]][cur[1]].parent;
     }
@@ -138,6 +148,7 @@ function astar() {
         if(compareArrays(cur, target)) {
             console.log("found path");
             foundPath = true;
+            resetColors();
             if(togglePath == 0) {
                 revealStraightPath(graph[cur[0]][cur[1]].parent);
             } else {
@@ -148,6 +159,10 @@ function astar() {
         }
 
         open.splice(idx, 1);
+        if(!compareArrays(start, cur) && !compareArrays(target, cur)) {
+            graph[cur[0]][cur[1]].color = "white";
+        }
+        
         let children = [];
         if(cur[0] > 0) {
             // above
@@ -221,6 +236,7 @@ function astar() {
         console.log("No path found");
         blinking = true;
         showingPath = true;
+        resetColors();
         if(togglePath == 0) {
             revealStraightPath(lastNode);
         } else {
@@ -310,8 +326,9 @@ document.addEventListener("keypress", function(e) {
 
 document.addEventListener("mousemove", function(e) {
     if(showingPath) return;
-    mousex = e.clientX;
-    mousey = e.clientY;
+    var rect = canvas.getBoundingClientRect();
+    mousex = e.clientX - rect.left;
+    mousey = e.clientY - rect.top;
     for(let i=0; i<amtV; i++) {
         for(let j=0; j<amtH; j++) {
             if(graph[i][j].clicked) continue;
@@ -334,4 +351,4 @@ document.addEventListener("mousemove", function(e) {
 
 init();
 
-setInterval(render, 10);
+setInterval(render, 1);

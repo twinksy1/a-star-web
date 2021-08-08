@@ -1,0 +1,21 @@
+html {
+    height: 100vh;
+}
+
+body {
+    min-height: 100vh;
+}
+
+#canvas-container {
+    width: 100%;
+    height: 100%;
+}
+
+#main-canvas {
+    height: 100vh;
+    border-radius: 1cm;
+}
+
+.row {
+    height: 100vh;
+}
