@@ -17,12 +17,6 @@ class Node {
     }
     render(ctx) {
         ctx.fillStyle = this.color;
-        if(!this.isNull) {
-            ctx.fillRect(this.x, this.y, this.w, this.h);
-            ctx.fillStyle = "black";
-            ctx.strokeRect(this.x, this.y, this.w, this.h);
-        } else {
-            ctx.fillRect(this.x, this.y, this.w, this.h);
-        }
+        ctx.fillRect(this.x, this.y, this.w, this.h);
     }
 }

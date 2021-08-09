@@ -3,7 +3,7 @@ var pageWidth, pageHeight;
 let ctx = canvas.getContext('2d');
 let curHighlight = [];
 let closed = [];
-let childless = [];
+let nulls = [];
 let mousex, mousey;
 let togglePath = 0;
 let showingPath = false;
@@ -14,8 +14,8 @@ let start = [];
 let target = [];
 let clicks = 0;
 let graph = [];
-let amtH = 75;
-let amtV = 50;
+let amtH = 100;
+let amtV = 100;
 
 function fitToContainer(canvas) {
     // Make it visually fill the positioned parent
@@ -42,6 +42,8 @@ function init() {
             let isNull = false;
             if(Math.random() < 0.1) {
                 isNull = true;
+                let tmp = [i, j];
+                nulls.push(tmp);
             }
             let node = new Node(x, y, nodeWidth, nodeHeight, isNull);
             row.push(node);
@@ -102,6 +104,7 @@ function resetColors() {
 function revealStraightPath(cur) {
     while(!compareArrays(cur, start)) {
         graph[cur[0]][cur[1]].color = "white";
+        graph[cur[0]][cur[1]].render(ctx);
         cur = graph[cur[0]][cur[1]].parent;
     }
 }
@@ -110,6 +113,7 @@ function revealWholePath(closed) {
     for(let i=0; i<closed.length; i++) {
         if(compareArrays(closed[i], start)) continue;
         graph[closed[i][0]][closed[i][1]].color = "white";
+        graph[closed[i][0]][closed[i][1]].render(ctx);
     }
 }
 
@@ -118,7 +122,6 @@ function astar() {
     let open = [[start[0],start[1]]];
     lastNode = [];
     closed = [];
-    childless = [];
     let foundPath = false;
     graph[start[0]][start[1]].gcost = 0;
     graph[start[0]][start[1]].fcost = calcDist(start, target);
@@ -240,7 +243,7 @@ function astar() {
         if(togglePath == 0) {
             revealStraightPath(lastNode);
         } else {
-            revealWholePath(childless);
+            revealWholePath(closed);
         }
     }
     clicks = 0;
@@ -255,21 +258,66 @@ function blink() {
     if(togglePath == 0) {
         let cur = lastNode;
         graph[cur[0]][cur[1]].color = blinkingColor;
-    } else {
-        for(let i=0; i<childless.length; i++) {
-            if(compareArrays(childless[i], start)) continue;
-            graph[childless[i][0]][childless[i][1]].color = blinkingColor;
-        }
     }
 }
 
 function render() {
-    for(let i=0; i<amtV; i++) {
-        for(let j=0; j<amtH; j++) {
-            graph[i][j].render(ctx);
+    let startx = graph[0][0].x;
+    let starty = graph[0][0].y;
+    let w = graph[0][0].w;
+    let h = graph[0][0].h;
+    let x = startx;
+    let y = starty;
+
+    // Big blue square
+    ctx.fillStyle = "blue";
+    ctx.fillRect(x, y, w * amtH, h * amtV);
+
+    // Nulls
+    for(let i=0; i<nulls.length; i++) {
+        graph[nulls[i][0]][nulls[i][1]].render(ctx);
+    }
+
+    // Current highlighted
+    graph[curHighlight[0]][curHighlight[1]].render(ctx);
+
+    // Start & target
+    if(start.length != 0) {
+        graph[start[0]][start[1]].render(ctx);
+    }
+    if(target.length != 0) {
+        graph[target[0]][target[1]].render(ctx);
+    }
+
+    // Path
+    if(showingPath) {
+        if(togglePath == 0) {
+            if(compareArrays(lastNode, target)) {
+                revealStraightPath(graph[target[0]][target[1]].parent);
+            } else {
+                revealStraightPath(lastNode);
+            }
+        } else {
+            revealWholePath(closed);
         }
     }
-    if(blinking) blink();
+
+    if(blinking) {
+        blink();
+        graph[lastNode[0]][lastNode[1]].render(ctx);
+    }
+
+    // Outlines
+    ctx.fillStyle = "black";
+    for(let i=0; i<amtV; i++) {
+        ctx.strokeRect(x, y, w * amtH, h);
+        y += h;
+    }
+    y = starty;
+    for(let i=0; i<amtH; i++) {
+        ctx.strokeRect(x, y, w, h * amtV);
+        x += w;
+    }
 }
 
 document.addEventListener("mousedown", function(e) {
@@ -299,6 +347,7 @@ document.addEventListener("keypress", function(e) {
                         // Make null
                         graph[i][j].isNull = true;
                         graph[i][j].color = "black";
+                        nulls.push([i, j]);
                         return;
                 }
             }
@@ -316,9 +365,6 @@ document.addEventListener("keypress", function(e) {
                 revealStraightPath(graph[lastNode[0]][lastNode[1]].parent);
             } else {
                 revealWholePath(closed);
-                if(blinking) {
-                    revealWholePath(childless);
-                }
             }
         }
     }
