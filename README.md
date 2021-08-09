@@ -8,3 +8,5 @@
 * Press 'n' to nullify highlighted node
 * If no path is possible, node closest to target will blink during shortest path display
 * Sliders to adjust the number of rows, number of columns, and the probability of nullified nodes in the graph
+# GIF Of Program Usage
+![GIF](./a-star-web.gif)
