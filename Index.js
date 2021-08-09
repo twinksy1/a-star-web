@@ -4,8 +4,10 @@ let ctx = canvas.getContext('2d');
 let curHighlight = [];
 let closed = [];
 let nulls = [];
+let nullProbability = 0.1;
 let mousex, mousey;
 let togglePath = 0;
+let diagnolsOn = true;
 let showingPath = false;
 let blinking = false;
 let blinkingColor = "white";
@@ -34,13 +36,18 @@ function init() {
     pageHeight = canvas.height;
     let nodeWidth = pageWidth / amtH;
     let nodeHeight = pageHeight / amtV;
+    nulls = [];
+    graph = [];
+    clicks = 0;
+    closed = [];
+    lastNode = start = target = [];
     let x = 0, y = 0;
     for(let i=0; i<amtV; i++) {
         let row = [];
         x = 0;
         for(let j=0; j<amtH; j++) {
             let isNull = false;
-            if(Math.random() < 0.1) {
+            if(Math.random() < nullProbability) {
                 isNull = true;
                 let tmp = [i, j];
                 nulls.push(tmp);
@@ -195,6 +202,39 @@ function astar() {
                 children.push(child);
             }
         }
+
+        // Count diagnol moves if toggled
+        if(diagnolsOn) {
+            if(cur[0] > 0 && cur[1] > 0) {
+                // top left
+                let child = [cur[0] - 1, cur[1] - 1];
+                if(!graph[child[0]][child[1]].isNull && !compareArrays(child, graph[cur[0]][cur[1]].parent)) {
+                    children.push(child);
+                }
+            }
+            if(cur[0] > 0 && cur[1] < amtH - 1) {
+                // top right
+                let child = [cur[0] - 1, cur[1] + 1];
+                if(!graph[child[0]][child[1]].isNull && !compareArrays(child, graph[cur[0]][cur[1]].parent)) {
+                    children.push(child);
+                }
+            }
+            if(cur[0] < amtV - 1 && cur[1] > 0) {
+                // bottom left
+                let child = [cur[0] + 1, cur[1] - 1];
+                if(!graph[child[0]][child[1]].isNull && !compareArrays(child, graph[cur[0]][cur[1]].parent)) {
+                    children.push(child);
+                }
+            }
+            if(cur[0] < amtV - 1 && cur[1] < amtH - 1) {
+                // bottom right
+                let child = [cur[0] + 1, cur[1] + 1];
+                if(!graph[child[0]][child[1]].isNull && !compareArrays(child, graph[cur[0]][cur[1]].parent)) {
+                    children.push(child);
+                }
+            }
+        }
+
         for(let i=0; i<children.length; i++) {
             let inClosed = false;
             for(let j=0; j<closed.length; j++) {
@@ -261,7 +301,20 @@ function blink() {
     }
 }
 
-function render() {
+async function render() {
+    if(!showingPath) {
+        let horizontalAmt = document.getElementById("horizontalAmt").value;
+        let verticalAmt = document.getElementById("verticalAmt").value;
+        let nullVal = document.getElementById("nullProbability").value / 100;
+        if(horizontalAmt != amtH || verticalAmt != amtV || nullVal != nullProbability) {
+            amtH = horizontalAmt;
+            amtV = verticalAmt;
+            nullProbability = nullVal;
+            await init();
+        }
+    }
+
+
     let startx = graph[0][0].x;
     let starty = graph[0][0].y;
     let w = graph[0][0].w;
@@ -329,6 +382,7 @@ document.addEventListener("mousedown", function(e) {
         graph[row][col].color = "green";
         start = [row, col];
     } else if(clicks == 1) {
+        if(compareArrays([row, col], start)) return;
         graph[row][col].color = "red";
         target = [row, col];
     }
@@ -344,6 +398,8 @@ document.addEventListener("keypress", function(e) {
             for(let j=0; j<amtH; j++) {
                 if(mousex >= graph[i][j].x && mousex < graph[i][j].x + graph[i][j].w && 
                     mousey >= graph[i][j].y && mousey < graph[i][j].y + graph[i][j].h && !graph[i][j].isNull) {
+                        if(compareArrays([i, j], start)) return;
+                        if(compareArrays([i, j], target)) return;
                         // Make null
                         graph[i][j].isNull = true;
                         graph[i][j].color = "black";
@@ -356,6 +412,9 @@ document.addEventListener("keypress", function(e) {
     if(e.key == "r") {
         reset();
         clicks = 0;
+    }
+    if(e.key == "d") {
+        diagnolsOn ^= 1;
     }
     if(e.key == "t") {
         togglePath ^= 1;
