@@ -19,16 +19,19 @@
                     <p>r = reset graph/end display path mode</p>
                 </div>
                 <div class="row">
-                    <p>t = toggle path display</p>
+                    <p>t = toggle path display <p id="pathDisplayToggle"></p></p>
                 </div>
                 <div class="row">
-                    <p>d = toggle diagnol paths on/off</p>
+                    <p>d = toggle diagnol paths <p id="diagnolToggle"></p></p>
                 </div>
                 <div class="row">
                     <p>n = nullify highlighted node</p>
                 </div>
                 <div class="row">
                     <p>left click to choose start/target Node</p>
+                </div>
+                <div class="row">
+                    <p id="diagnols-message" style="font-weight: bold;"></p>
                 </div>
             </div>
             <div class="col-10" id="canvas-container">
@@ -41,7 +44,7 @@
                 <div class="row">
                     <div class="slidecontainer">
                         <label for="horizontalAmt">adjust columns</label>
-                        <input type="range" min="10" max="300" value="100" class="slider" step="10" id="horizontalAmt">
+                        <input type="range" min="10" max="300" value="30" class="slider" step="10" id="horizontalAmt">
                     </div>
                 </div>
             </div>
@@ -49,7 +52,7 @@
                 <div class="row">
                     <div class="slidecontainer">
                         <label for="verticalAmt">adjust rows</label>
-                        <input type="range" min="10" max="300" value="100" class="slider" step="10" id="verticalAmt">
+                        <input type="range" min="10" max="300" value="20" class="slider" step="10" id="verticalAmt">
                     </div>
                 </div>
             </div>
@@ -57,11 +60,12 @@
                 <div class="row">
                     <div class="slidecontainer">
                         <label for="nullProbability">adjust null %</label>
-                        <input type="range" min="0" max="90" value="10" class="slider" step="5" id="nullProbability">
+                        <input type="range" min="0" max="90" value="0" class="slider" step="5" id="nullProbability">
                     </div>
                 </div>
             </div>
         </div>
+        <script src="GlobalVars.js"></script>
         <script src="./Node.js"></script>
         <script src="./Index.js"></script>
     </body>

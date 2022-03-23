@@ -1,24 +1,3 @@
-let canvas = document.getElementById("main-canvas");
-var pageWidth, pageHeight;
-let ctx = canvas.getContext('2d');
-let curHighlight = [];
-let closed = [];
-let nulls = [];
-let nullProbability = 0.1;
-let mousex, mousey;
-let togglePath = 0;
-let diagnolsOn = true;
-let showingPath = false;
-let blinking = false;
-let blinkingColor = "white";
-let lastNode = [];
-let start = [];
-let target = [];
-let clicks = 0;
-let graph = [];
-let amtH = 100;
-let amtV = 100;
-
 function fitToContainer(canvas) {
     // Make it visually fill the positioned parent
     canvas.style.width ='100%';
@@ -79,9 +58,9 @@ function reset() {
     for(let i=0; i<amtV; i++) {
         for(let j=0; j<amtH; j++) {
             if(graph[i][j].isNull) {
-                graph[i][j].color = "black";
+                graph[i][j].color = nullColor;
             } else {
-                graph[i][j].color = "blue";
+                graph[i][j].color = defColor;
             }
             graph[i][j].clicked = false;
             graph[i][j].parent = [];
@@ -100,9 +79,9 @@ function resetColors() {
             let tmp = [i, j];
             if(compareArrays(tmp, start) || compareArrays(tmp, target)) continue;
             if(graph[i][j].isNull) {
-                graph[i][j].color = "black";
+                graph[i][j].color = nullColor;
             } else {
-                graph[i][j].color = "blue";
+                graph[i][j].color = defColor;
             }
         }
     }
@@ -110,7 +89,7 @@ function resetColors() {
 
 function revealStraightPath(cur) {
     while(!compareArrays(cur, start)) {
-        graph[cur[0]][cur[1]].color = "white";
+        graph[cur[0]][cur[1]].color = pathColor;
         graph[cur[0]][cur[1]].render(ctx);
         cur = graph[cur[0]][cur[1]].parent;
     }
@@ -119,7 +98,7 @@ function revealStraightPath(cur) {
 function revealWholePath(closed) {
     for(let i=0; i<closed.length; i++) {
         if(compareArrays(closed[i], start)) continue;
-        graph[closed[i][0]][closed[i][1]].color = "white";
+        graph[closed[i][0]][closed[i][1]].color = pathColor;
         graph[closed[i][0]][closed[i][1]].render(ctx);
     }
 }
@@ -170,7 +149,7 @@ function astar() {
 
         open.splice(idx, 1);
         if(!compareArrays(start, cur) && !compareArrays(target, cur)) {
-            graph[cur[0]][cur[1]].color = "white";
+            graph[cur[0]][cur[1]].color = pathColor;
         }
         
         let children = [];
@@ -290,15 +269,15 @@ function astar() {
 }
 
 function blink() {
-    if(blinkingColor == "white") {
+    if(blinkingColor == pathColor) {
         blinkingColor = "orange";
     } else {
-        blinkingColor = "white";
+        blinkingColor = pathColor;
     }
-    if(togglePath == 0) {
+    //if(togglePath == 0) {
         let cur = lastNode;
         graph[cur[0]][cur[1]].color = blinkingColor;
-    }
+    //}
 }
 
 async function render() {
@@ -314,6 +293,23 @@ async function render() {
         }
     }
 
+    if(diagnolsOn) {
+        document.getElementById("diagnolToggle").innerText = "ON";
+        document.getElementById("diagnolToggle").style.color = "green";
+        
+    } else {
+        document.getElementById("diagnolToggle").innerText = "OFF";
+        document.getElementById("diagnolToggle").style.color = "red";
+    }
+    document.getElementById("diagnolToggle").style.fontWeight = "bold";
+
+    if(togglePath) {
+        document.getElementById("pathDisplayToggle").innerText = "WHOLE";
+        
+    } else {
+        document.getElementById("pathDisplayToggle").innerText = "SHORTEST";
+    }
+    document.getElementById("pathDisplayToggle").style.fontWeight = "bold";
 
     let startx = graph[0][0].x;
     let starty = graph[0][0].y;
@@ -323,7 +319,7 @@ async function render() {
     let y = starty;
 
     // Big blue square
-    ctx.fillStyle = "blue";
+    ctx.fillStyle = defColor;
     ctx.fillRect(x, y, w * amtH, h * amtV);
 
     // Nulls
@@ -361,7 +357,7 @@ async function render() {
     }
 
     // Outlines
-    ctx.fillStyle = "black";
+    ctx.fillStyle = nullColor;
     for(let i=0; i<amtV; i++) {
         ctx.strokeRect(x, y, w * amtH, h);
         y += h;
@@ -379,11 +375,12 @@ document.addEventListener("mousedown", function(e) {
     let row = curHighlight[0];
     let col = curHighlight[1];
     if(clicks == 0) {
-        graph[row][col].color = "green";
+        graph[row][col].color = startColor;
         start = [row, col];
     } else if(clicks == 1) {
         if(compareArrays([row, col], start)) return;
-        graph[row][col].color = "red";
+        if(graph[row][col].isNull) return;
+        graph[row][col].color = targetColor;
         target = [row, col];
     }
     clicks++;
@@ -402,7 +399,7 @@ document.addEventListener("keypress", function(e) {
                         if(compareArrays([i, j], target)) return;
                         // Make null
                         graph[i][j].isNull = true;
-                        graph[i][j].color = "black";
+                        graph[i][j].color = nullColor;
                         nulls.push([i, j]);
                         return;
                 }
@@ -440,14 +437,14 @@ document.addEventListener("mousemove", function(e) {
             if(mousex >= graph[i][j].x && mousex < graph[i][j].x + graph[i][j].w && 
                 mousey >= graph[i][j].y && mousey < graph[i][j].y + graph[i][j].h && !graph[i][j].isNull) {
                     // Highlight
-                    graph[i][j].color = "yellow";
+                    graph[i][j].color = highlightColor;
                     curHighlight = [i, j];
             }
             else {
                 if(graph[i][j].isNull) {
-                    graph[i][j].color = "black";
+                    graph[i][j].color = nullColor;
                 } else {
-                    graph[i][j].color = "blue";
+                    graph[i][j].color = defColor;
                 }
             }
         }

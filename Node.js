@@ -6,13 +6,13 @@ class Node {
         this.h = h;
         this.isNull = isNull;
         this.clicked = false;
-        this.color = "blue";
+        this.color = defColor;
         this.gcost = 0;
         this.fcost = 0;
         this.hcost = 0;
         this.parent = [];
         if(this.isNull) {
-            this.color = "black";
+            this.color = nullColor;
         }
     }
     render(ctx) {
