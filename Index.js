@@ -43,7 +43,7 @@ function init() {
 function calcDist(idx1, idx2) {
     let xdiff = graph[idx1[0]][idx1[1]].x - graph[idx2[0]][idx2[1]].x;
     let ydiff = graph[idx1[0]][idx1[1]].y - graph[idx2[0]][idx2[1]].y;
-    return Math.sqrt(xdiff*xdiff + ydiff*ydiff);
+    return xdiff*xdiff + ydiff*ydiff;
 }
 
 function compareArrays(a, b) {
@@ -103,6 +103,10 @@ function revealWholePath(closed) {
     }
 }
 
+function InBounds(node) {
+    return node[0] >= 0 && node[0] < amtV && node[1] >= 0 && node[1] < amtH;
+}
+
 function astar() {
     let path = [];
     let open = [[start[0],start[1]]];
@@ -153,63 +157,22 @@ function astar() {
         }
         
         let children = [];
-        if(cur[0] > 0) {
-            // above
-            let child = [cur[0] - 1, cur[1]];
-            if(!graph[child[0]][child[1]].isNull && !compareArrays(child, graph[cur[0]][cur[1]].parent)) {
-                children.push(child);
-            }
-        }
-        if(cur[0] < amtV - 1) {
-            // below
-            let child = [cur[0] + 1, cur[1]];
-            if(!graph[child[0]][child[1]].isNull && !compareArrays(child, graph[cur[0]][cur[1]].parent)) {
-                children.push(child);
-            }
-        }
-        if(cur[1] > 0) {
-            // left
-            let child = [cur[0], cur[1] - 1];
-            if(!graph[child[0]][child[1]].isNull && !compareArrays(child, graph[cur[0]][cur[1]].parent)) {
-                children.push(child);
-            }
-        }
-        if(cur[1] < amtH - 1) {
-            // right
-            let child = [cur[0], cur[1] + 1];
-            if(!graph[child[0]][child[1]].isNull && !compareArrays(child, graph[cur[0]][cur[1]].parent)) {
-                children.push(child);
-            }
-        }
-
-        // Count diagnol moves if toggled
-        if(diagnolsOn) {
-            if(cur[0] > 0 && cur[1] > 0) {
-                // top left
-                let child = [cur[0] - 1, cur[1] - 1];
+        let nonDiagnolMovements = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+        let diagnolMovements = [[-1, -1], [-1, 1], [1, -1], [1, 1]];
+        for(let i=0; i<4; i++) {
+            let child = [cur[0] + nonDiagnolMovements[i][0], cur[1] + nonDiagnolMovements[i][1]];
+            if(InBounds(child)) {
                 if(!graph[child[0]][child[1]].isNull && !compareArrays(child, graph[cur[0]][cur[1]].parent)) {
                     children.push(child);
                 }
             }
-            if(cur[0] > 0 && cur[1] < amtH - 1) {
-                // top right
-                let child = [cur[0] - 1, cur[1] + 1];
-                if(!graph[child[0]][child[1]].isNull && !compareArrays(child, graph[cur[0]][cur[1]].parent)) {
-                    children.push(child);
-                }
-            }
-            if(cur[0] < amtV - 1 && cur[1] > 0) {
-                // bottom left
-                let child = [cur[0] + 1, cur[1] - 1];
-                if(!graph[child[0]][child[1]].isNull && !compareArrays(child, graph[cur[0]][cur[1]].parent)) {
-                    children.push(child);
-                }
-            }
-            if(cur[0] < amtV - 1 && cur[1] < amtH - 1) {
-                // bottom right
-                let child = [cur[0] + 1, cur[1] + 1];
-                if(!graph[child[0]][child[1]].isNull && !compareArrays(child, graph[cur[0]][cur[1]].parent)) {
-                    children.push(child);
+            if(diagnolsOn) {
+                child = []
+                child = [cur[0] + diagnolMovements[i][0], cur[1] + diagnolMovements[i][1]];
+                if(InBounds(child)) {
+                    if(!graph[child[0]][child[1]].isNull && !compareArrays(child, graph[cur[0]][cur[1]].parent)) {
+                        children.push(child);
+                    }
                 }
             }
         }
@@ -238,6 +201,8 @@ function astar() {
             graph[children[i][0]][children[i][1]].gcost = gcost;
             graph[children[i][0]][children[i][1]].hcost = hcost;
             graph[children[i][0]][children[i][1]].fcost = gcost + hcost;
+
+            if(hcost > cur.hcost) continue;
 
             let j;
             for(j=0; j<open.length; j++) {
